@@ -13,18 +13,6 @@ public class UserRepository
             .AsNoTracking()
             .ToListAsync();
     }
-    public Task<List<UserEntity>> GetUserSkills(){
-        return context.Users
-            .AsNoTracking()
-            .Include(u => u.Skills)
-            .ToListAsync();
-    }
-    public Task<List<UserEntity>> GetUserQuests(){
-        return context.Users
-            .AsNoTracking()
-            .ToListAsync();
-    }
-    // Получить скиллы и квесты по юзер айди
     public async Task Add(UserEntity user){
         await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
@@ -38,13 +26,12 @@ public class UserRepository
                 .SetProperty(u => u.Email,Email)
             );
     }
-    //сделать изменение опыта и койнов, по идее
-    public async Task UpdateUserExpAndCoins(Guid userId,string Name,
-        string Email){
+    public async Task UpdateUserExpAndCoins(Guid userId,int TotalExperience,
+        decimal Coins){ // Нужно будет потом DTO для изменения
         await context.Users.Where(u => u.Id == userId)
             .ExecuteUpdateAsync(s => s
-                .SetProperty(u => u.Name,Name)
-                .SetProperty(u => u.Email,Email)
+                .SetProperty(u => u.TotalExperience,TotalExperience)
+                .SetProperty(u => u.Coins,Coins)
             );
     }
     public async Task Delete(Guid userId){
