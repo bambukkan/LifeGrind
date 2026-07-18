@@ -1,4 +1,4 @@
-public interface IUserRepository
+public interface IUserService
 {
     Task<List<UserEntity>> GetUsers();
     Task<UserEntity> Add();
