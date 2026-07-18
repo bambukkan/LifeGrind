@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LifeGrind.API/LifeGrind.API.csproj" />
+  <Project Path="LifeGrind.CORE/LifeGrind.CORE.csproj" />
+  <Project Path="LifeGrind.DATAACCESS/LifeGrind.DATAACCESS.csproj" />
+</Solution>
