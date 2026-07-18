@@ -2,11 +2,8 @@ public interface IQuestService
 {
     Task<List<QuestEntity>> GetQuests();
     Task<List<QuestEntity>> GetQuestsByUserId(Guid userId);
-    Task Add(QuestEntity Quest);
-    Task Update(Guid QuestId,
-        string title,string description,QuestDifficulty difficulty,
-        int ExperienceReward,decimal CoinReward);
+    Task Add(CreateQuestRequest request);
+    Task Update(Guid QuestId,UpdateQuestRequest request);
     Task Delete(Guid QuestId);
-    Task UserFinishRequest(Guid QuestId,
-        QuestStatus status,DateTime completedAt);
+    Task UserFinishQuest(Guid QuestId,UpdateUserFinishQuestRequest request);
 }

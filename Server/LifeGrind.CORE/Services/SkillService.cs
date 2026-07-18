@@ -11,17 +11,25 @@ public class SkillService : ISkillService
     public async Task<List<SkillEntity>> GetSkillsByUserId(Guid userId){
         return await skillRepository.GetSkillsByUserId(userId);
     }
-    public async Task Add(SkillEntity skill)
+    public async Task Add(CreateSkillRequest request)
     {
+        var skill = new SkillEntity()
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Description = request.Description,
+            Experience = request.Experience
+        };
         await skillRepository.Add(skill);
     }
     
-    public async Task Update(Guid skillId,
-        string name,string description,int experience)
+    public async Task Update(Guid skillId, UpdateSkillRequest request)
     {
-        await skillRepository.Update(skillId,name,description,experience);
+        await skillRepository.Update(skillId,request.Name,request.Description,request.Experience);
     }
     public async Task Delete(Guid skillId){
         await skillRepository.Delete(skillId);
     }
+
+    // Все проверки тут будут с FV, так что тут по идее мне и нечего писать
 }

@@ -1,5 +1,4 @@
 using System.Security.Authentication;
-using Microsoft.AspNetCore.Http;
 public class UserService : IUserService
 {
     private readonly IUserRepository userRepository;
@@ -32,10 +31,11 @@ public class UserService : IUserService
         }
         var newPasswordHash = passwordHasher.GeneratePasswordHash(request.newPassword);
         await userRepository.Update(userId,request.Name,request.Email,
-        newPasswordHash);
+        newPasswordHash); // Для имени и имейла будет все сделано во FluentValidation
     }
     public async Task UpdateUserExpAndCoins(Guid userId,UpdateUserExpAndCoinsRequest request)
     {
+        // Тут пока не придумал какую валидацию с опытом и коинами сделами, ну в FV будет
         await userRepository.UpdateUserExpAndCoins(userId,request.TotalExperience,request.Coins);
     }
     public async Task Delete(Guid userId)

@@ -31,7 +31,7 @@ public class QuestRepository : IQuestRepository
                 .SetProperty(u => u.ExperienceReward,ExperienceReward)
             );
     }
-    public async Task UserFinishRequest(Guid QuestId,
+    public async Task UserFinishQuest(Guid QuestId,
         QuestStatus status,DateTime completedAt){
         await context.Quests.Where(s => s.Id == QuestId)
             .ExecuteUpdateAsync(s => s

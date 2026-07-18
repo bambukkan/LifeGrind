@@ -11,23 +11,32 @@ public class QuestService : IQuestService
     public async Task<List<QuestEntity>> GetQuestsByUserId(Guid userId){
         return await questRepository.GetQuestsByUserId(userId);
     }   
-    public async Task Add(QuestEntity Quest)
+    public async Task Add(CreateQuestRequest request)
     {
-        await questRepository.Add(Quest);
+        var quest = new QuestEntity()
+        {
+            Id = Guid.NewGuid(),
+            Title = request.Title,  
+            Description = request.Description,  
+            Difficulty = request.Difficulty,  
+            ExperienceReward = request.ExperienceReward,
+            CoinReward = request.CoinReward  
+        }; //  Ну тут так же валидацйия с FV проверяться будет 
+        await questRepository.Add(quest);
     }
     public async Task Update(Guid QuestId,
-        string title,string description,QuestDifficulty difficulty,
-        int ExperienceReward,decimal CoinReward)
+        UpdateQuestRequest request)
     {
         await questRepository.Update(QuestId,
-        title,description,difficulty,ExperienceReward,CoinReward);
+        request.Title,request.Description,request.Difficulty,request.ExperienceReward,request.CoinReward);
     }
     public async Task Delete(Guid QuestId){
         await questRepository.Delete(QuestId);
     }
-    public async Task UserFinishRequest(Guid QuestId,
-        QuestStatus status,DateTime completedAt)
+    public async Task UserFinishQuest(Guid QuestId,
+    UpdateUserFinishQuestRequest request) // статус либо завершен либо отменен здесь
     {
-        await questRepository.UserFinishRequest(QuestId,status,completedAt);
+        DateTime completedAt = DateTime.UtcNow;
+        await questRepository.UserFinishQuest(QuestId,request.Status,completedAt);
     }
 }

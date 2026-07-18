@@ -7,6 +7,6 @@ public interface IQuestRepository
         string title,string description,QuestDifficulty difficulty,
         int ExperienceReward,decimal CoinReward);
     Task Delete(Guid QuestId);
-    Task UserFinishRequest(Guid QuestId,
+    Task UserFinishQuest(Guid QuestId,
         QuestStatus status,DateTime completedAt);
 }
