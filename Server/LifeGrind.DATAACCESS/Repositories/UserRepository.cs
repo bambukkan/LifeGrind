@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-public class UserRepository
+public class UserRepository : IUserRepository
 {
     private readonly LifeGrindDbContext context;
     public UserRepository(LifeGrindDbContext _context)

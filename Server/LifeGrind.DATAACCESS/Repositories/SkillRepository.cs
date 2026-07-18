@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
-public class SkillRepository{
+public class SkillRepository : ISkillRepository
+{
     private readonly LifeGrindDbContext context;
     public SkillRepository(LifeGrindDbContext _context)
     {

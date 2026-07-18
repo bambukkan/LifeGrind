@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
-public class QuestRepository{
+public class QuestRepository : IQuestRepository
+{
     private readonly LifeGrindDbContext context;
     public QuestRepository(LifeGrindDbContext _context)
     {
