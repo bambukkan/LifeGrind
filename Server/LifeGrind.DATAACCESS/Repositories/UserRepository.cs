@@ -13,17 +13,22 @@ public class UserRepository : IUserRepository
             .AsNoTracking()
             .ToListAsync();
     }
+    public Task<UserEntity?> GetUserById(Guid userId)
+    {
+        return context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+    }
     public async Task Add(UserEntity user){
         await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
     }
     
     public async Task Update(Guid userId,string Name,
-        string Email){
+        string Email,string newPasswordHash){
         await context.Users.Where(u => u.Id == userId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(u => u.Name,Name)
                 .SetProperty(u => u.Email,Email)
+                .SetProperty(u => u.PasswordHash,newPasswordHash)
             );
     }
     public async Task UpdateUserExpAndCoins(Guid userId,int TotalExperience,

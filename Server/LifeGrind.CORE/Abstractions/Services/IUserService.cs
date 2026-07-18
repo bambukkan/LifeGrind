@@ -1,10 +1,8 @@
 public interface IUserService
 {
     Task<List<UserEntity>> GetUsers();
-    Task Add(UserEntity user);
-    Task Update(Guid userId,string Name,
-        string Email);
-    Task UpdateUserExpAndCoins(Guid userId,int TotalExperience,
-        decimal Coins);
+    Task Add(CreateUserRequest request);
+    Task Update(Guid userId,UpdateUserRequest request);
+    Task UpdateUserExpAndCoins(Guid userId,UpdateUserExpAndCoinsRequest request);
     Task Delete(Guid userId);
 }
