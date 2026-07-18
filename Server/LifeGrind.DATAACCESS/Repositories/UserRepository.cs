@@ -31,12 +31,12 @@ public class UserRepository : IUserRepository
                 .SetProperty(u => u.PasswordHash,newPasswordHash)
             );
     }
-    public async Task UpdateUserExpAndCoins(Guid userId,int TotalExperience,
+    public async Task UpdateUserExpAndCoins(Guid userId,int ExperienceReward,
         decimal Coins){ // Нужно будет потом DTO для изменения
         await context.Users.Where(u => u.Id == userId)
             .ExecuteUpdateAsync(s => s
-                .SetProperty(u => u.TotalExperience,TotalExperience)
-                .SetProperty(u => u.Coins,Coins)
+                .SetProperty(u => u.TotalExperience,u => u.TotalExperience+ExperienceReward)
+                .SetProperty(u => u.Coins,u => u.Coins + Coins)
             );
     }
     public async Task Delete(Guid userId){

@@ -11,14 +11,15 @@ public class SkillService : ISkillService
     public async Task<List<SkillEntity>> GetSkillsByUserId(Guid userId){
         return await skillRepository.GetSkillsByUserId(userId);
     }
-    public async Task Add(CreateSkillRequest request)
+    public async Task Add(Guid userId,CreateSkillRequest request)
     {
         var skill = new SkillEntity()
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
             Description = request.Description,
-            Experience = request.Experience
+            Experience = request.Experience,
+            UserId = userId
         };
         await skillRepository.Add(skill);
     }

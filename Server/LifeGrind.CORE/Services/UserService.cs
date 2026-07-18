@@ -1,4 +1,5 @@
 using System.Security.Authentication;
+using LifeGrind.CORE.Exceptions;
 public class UserService : IUserService
 {
     private readonly IUserRepository userRepository;
@@ -27,7 +28,7 @@ public class UserService : IUserService
 
         if (user == null || !passwordHasher.VerifyPassword(request.oldPassword, user.PasswordHash))
         {
-            throw new InvalidCredentialException();
+            throw new InvalidCredentialsException();
         }
         var newPasswordHash = passwordHasher.GeneratePasswordHash(request.newPassword);
         await userRepository.Update(userId,request.Name,request.Email,

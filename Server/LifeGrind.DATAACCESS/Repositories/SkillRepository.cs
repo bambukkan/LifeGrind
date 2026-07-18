@@ -12,7 +12,7 @@ public class SkillRepository : ISkillRepository
     }
     public  Task<List<SkillEntity>> GetSkillsByUserId(Guid userId)
     {
-        return context.Skills.Where(s => s.Id == userId).ToListAsync();
+        return context.Skills.Where(s => s.UserId == userId).ToListAsync();
     }
     public async Task Add(SkillEntity skill){
         await context.Skills.AddAsync(skill);   

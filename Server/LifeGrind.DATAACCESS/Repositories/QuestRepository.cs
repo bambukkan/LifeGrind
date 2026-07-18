@@ -10,9 +10,13 @@ public class QuestRepository : IQuestRepository
     public Task<List<QuestEntity>> GetQuests(){
         return context.Quests.ToListAsync();
     }
+    public async Task<QuestEntity?> GetQuest(Guid questId)
+    {
+        return await context.Quests.FirstOrDefaultAsync(q => q.Id == questId);
+    }
     public  Task<List<QuestEntity>> GetQuestsByUserId(Guid userId)
     {
-        return context.Quests.Where(s => s.Id == userId).ToListAsync();
+        return context.Quests.Where(s => s.UserId == userId).ToListAsync();
     }
     public async Task Add(QuestEntity Quest){
         await context.Quests.AddAsync(Quest);   
@@ -31,7 +35,16 @@ public class QuestRepository : IQuestRepository
                 .SetProperty(u => u.ExperienceReward,ExperienceReward)
             );
     }
-    public async Task UserFinishQuest(Guid QuestId,
+    public async Task CompleteQuest(Guid QuestId,
+        QuestStatus status,DateTime completedAt){
+        await context.Quests.Where(s => s.Id == QuestId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(u => u.Status,status)
+                .SetProperty(u => u.CompletedAt,completedAt)
+            );
+            
+    }
+    public async Task CancelQuest(Guid QuestId,
         QuestStatus status,DateTime completedAt){
         await context.Quests.Where(s => s.Id == QuestId)
             .ExecuteUpdateAsync(s => s

@@ -4,7 +4,8 @@ public record CreateQuestRequest(
     QuestDifficulty Difficulty,
     // статус нет смысла делать, ведь при создание сущнсоит он уже делается активным
     int ExperienceReward,
-    decimal CoinReward
+    decimal CoinReward,
+    Guid SkillId
 
 );
 
@@ -15,8 +16,4 @@ public record UpdateQuestRequest(
     // статус нет смысла делать, ведь при создание сущнсоит он уже делается активным
     int ExperienceReward,
     decimal CoinReward
-);
-
-public record UpdateUserFinishQuestRequest(
-    QuestStatus Status
 );
