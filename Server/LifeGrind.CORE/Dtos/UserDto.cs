@@ -11,11 +11,6 @@ public record UpdateUserRequest(
     string newPassword
 );
 
-public record UpdateUserExpAndCoinsRequest(
-    int TotalExperience,
-    decimal Coins
-);
-
 public record LoginUserRequest(
     string Email,
     string Password

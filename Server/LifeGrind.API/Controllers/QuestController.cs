@@ -18,7 +18,7 @@ public class QuestController : ControllerBase
         return Ok(Quests);
     }
     [HttpGet("by-userId")]
-    public async Task<ActionResult<SkillEntity>> GetQuestByUserId(){
+    public async Task<ActionResult<SkillEntity>> GetQuestsByUserId(){
         var userId = GetCurrentUserId();
         if(userId == null)
         {
@@ -38,27 +38,47 @@ public class QuestController : ControllerBase
         await QuestService.Add(userId.Value,request);
         return Ok();
     }
-    [HttpPut("{id}")]
+    [HttpPut("{questId:guid}")]
     public async Task<IActionResult> Update([FromRoute] Guid questId,[FromBody] UpdateQuestRequest request){
-        await QuestService.Update(questId,request);
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await QuestService.Update(userId.Value,questId,request);
         return Ok();
     }
-    [HttpDelete("{id}")]
+    [HttpDelete("{questId:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid questId)
     {
-        await QuestService.Delete(questId);
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await QuestService.Delete(userId.Value,questId);
         return Ok();
     }
-    [HttpPost("{id}/complete")]
+    [HttpPost("{questId:guid}/complete")]
     public async Task<IActionResult> CompleteQuest([FromRoute] Guid questId)
     {
-        await QuestService.CompleteQuest(questId);
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await QuestService.CompleteQuest(userId.Value,questId);
         return Ok();
     } 
-    [HttpPost("{id}/cancel")]
+    [HttpPost("{questId:guid}/cancel")]
     public async Task<IActionResult> CancelQuest([FromRoute] Guid questId)
     {
-        await QuestService.CancelQuest(questId);
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await QuestService.CancelQuest(userId.Value,questId);
         return Ok();
     } 
 

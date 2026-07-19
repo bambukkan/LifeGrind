@@ -40,15 +40,25 @@ public class SkillController : ControllerBase
         return Ok();
     } // Временно будет приходить из клиенда айди пользователя, 
     // щас дозакончу контроллеры и сделаю атворизацию
-    [HttpPut("{id}")]
+    [HttpPut("{skillId:guid}")]
     public async Task<IActionResult> Update([FromRoute] Guid skillId,[FromBody] UpdateSkillRequest request){
-        await SkillService.Update(skillId,request);
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await SkillService.Update(userId.Value,skillId,request);
         return Ok();
     }
-    [HttpDelete("{id}")]
+    [HttpDelete("{skillId:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid skillId)
     {
-        await SkillService.Delete(skillId);
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await SkillService.Delete(userId.Value,skillId);
         return Ok();
     }
 

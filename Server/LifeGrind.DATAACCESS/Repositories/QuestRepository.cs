@@ -14,6 +14,10 @@ public class QuestRepository : IQuestRepository
     {
         return await context.Quests.FirstOrDefaultAsync(q => q.Id == questId);
     }
+    public async Task<QuestEntity?> GetQuestByUserId(Guid userId)
+    {
+        return await context.Quests.FirstOrDefaultAsync(s => s.UserId == userId);
+    }
     public  Task<List<QuestEntity>> GetQuestsByUserId(Guid userId)
     {
         return context.Quests.Where(s => s.UserId == userId).ToListAsync();

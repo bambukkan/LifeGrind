@@ -4,6 +4,6 @@ public interface ISkillService
     Task<List<SkillEntity>> GetSkillsByUserId(Guid userId);
     Task Add(Guid userId, CreateSkillRequest request);
     
-    Task Update(Guid skillId, UpdateSkillRequest request);
-    Task Delete(Guid skillId);
+    Task Update(Guid userId,Guid skillId, UpdateSkillRequest request);
+    Task Delete(Guid userId,Guid skillId);
 }

@@ -2,6 +2,7 @@ public interface IQuestRepository
 {
     Task<List<QuestEntity>> GetQuests();
     Task<QuestEntity?> GetQuest(Guid questId);
+    Task<QuestEntity?> GetQuestByUserId(Guid userId);
     Task<List<QuestEntity>> GetQuestsByUserId(Guid userId);
     Task Add(QuestEntity Quest);
     Task Update(Guid QuestId,
