@@ -46,6 +46,14 @@ public class SkillRepository : ISkillRepository
             );
     }
 
+    public async Task AddExperience(Guid skillId, int experience)
+    {
+        await context.Skills.Where(s => s.Id == skillId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(u => u.Experience, u => u.Experience + experience)
+            );
+    }
+
     public async Task Delete(Guid skillId)
     {
         await context.Skills.Where(u => u.Id == skillId).ExecuteDeleteAsync();

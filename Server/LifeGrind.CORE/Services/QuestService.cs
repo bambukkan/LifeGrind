@@ -4,11 +4,16 @@ public class QuestService : IQuestService
 {
     private readonly IQuestRepository questRepository;
     private readonly IUserRepository userRepository;
+    private readonly ISkillRepository skillRepository;
 
-    public QuestService(IQuestRepository _QuestRepository, IUserRepository _userRepository)
+    public QuestService(
+        IQuestRepository _QuestRepository,
+        IUserRepository _userRepository,
+        ISkillRepository _skillRepository)
     {
         questRepository = _QuestRepository;
         userRepository = _userRepository;
+        skillRepository = _skillRepository;
     }
 
     public async Task<List<QuestEntity>> GetQuests()
@@ -76,6 +81,10 @@ public class QuestService : IQuestService
             quest.UserId,
             quest.ExperienceReward,
             quest.CoinReward);
+
+        await skillRepository.AddExperience(
+            quest.SkillId,
+            quest.ExperienceReward);
 
         await questRepository.CompleteQuest(
             quest.Id,
