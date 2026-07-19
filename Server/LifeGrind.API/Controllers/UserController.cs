@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -9,26 +10,83 @@ public class UserController : ControllerBase
     {
         userService = _userService;
     }
+    [HttpGet]
+    [Authorize]
     public async Task<ActionResult<UserEntity>> GetUsers(){
         var users = await userService.GetUsers();
         return Ok(users);
     }
-    public async Task<IActionResult> Add(CreateUserRequest request){
-        await userService.Add(request);
+    [HttpPost]
+    public async Task<IActionResult> Register(CreateUserRequest request){
+        var token = await userService.Register(request);
+
+        Response.Cookies.Append(
+            "Access-cookies",
+            token,
+            CreateAuthCookieOptions()
+        );
+
         return Ok();
     }
-    public async Task<IActionResult> Update(Guid userId,UpdateUserRequest request){
-        await userService.Update(userId,request);
-        return Ok();
-    }
-    public async Task<IActionResult> UpdateUserExpAndCoins(Guid userId,UpdateUserExpAndCoinsRequest request)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
     {
-        await userService.UpdateUserExpAndCoins(userId,request);
+        var token = await userService.Login(request);
+        var cookieOptions = CreateAuthCookieOptions();
+
+        Response.Cookies.Append("Access-cookies",token,cookieOptions);
+
         return Ok();
     }
-    public async Task<IActionResult> Delete(Guid userId)
-    {
-        await userService.Delete(userId);
+    [HttpPut]
+    [Authorize]
+    public async Task<IActionResult> Update([FromBody] UpdateUserRequest request){
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await userService.Update(userId.Value,request);
         return Ok();
+    }
+    [HttpPatch("rewards")]
+    [Authorize]
+    public async Task<IActionResult> UpdateUserExpAndCoins([FromBody] UpdateUserExpAndCoinsRequest request)
+    {
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await userService.UpdateUserExpAndCoins(userId.Value,request);
+        return Ok();
+    }
+    [HttpDelete("")]
+    [Authorize]
+    public async Task<IActionResult> Delete()
+    {
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        await userService.Delete(userId.Value);
+        return Ok();
+    }
+    private CookieOptions CreateAuthCookieOptions()
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = Request.IsHttps,
+            SameSite = SameSiteMode.Lax
+        };
+    }
+
+    private Guid? GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst("UserId")?.Value;
+        return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
     }
 }
+

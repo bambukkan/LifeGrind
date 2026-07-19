@@ -4,15 +4,18 @@ public class UserService : IUserService
 {
     private readonly IUserRepository userRepository;
     private readonly IPasswordHasher passwordHasher;
-    public UserService(IUserRepository _userRepository,IPasswordHasher _passwordHasher)
+    private readonly IJwtProvider jwtProvider;
+    public UserService(IUserRepository _userRepository,
+    IPasswordHasher _passwordHasher,IJwtProvider _jwtProvider)
     {
         userRepository = _userRepository;
         passwordHasher = _passwordHasher;
+        jwtProvider = _jwtProvider;
     }
     public async Task<List<UserEntity>> GetUsers(){
         return await userRepository.GetUsers();
     }
-    public async Task Add(CreateUserRequest request){
+    public async Task<string> Register(CreateUserRequest request){
         UserEntity user = new UserEntity()
         {
             Id = Guid.NewGuid(),
@@ -22,7 +25,21 @@ public class UserService : IUserService
         };
 
         await userRepository.Add(user);
+
+        return jwtProvider.GenerateToken(user);
     }
+
+    public async Task<string> Login(LoginUserRequest request)
+    {
+        UserEntity? user = await userRepository.GetUserByEmail(request.Email);
+        if(user == null || !passwordHasher.VerifyPassword(request.Password,user.PasswordHash))
+        {
+            throw new InvalidCredentialsException();
+        }
+        var token = jwtProvider.GenerateToken(user);
+        return token;
+    }
+
     public async Task Update(Guid userId,UpdateUserRequest request){
         var user = await userRepository.GetUserById(userId);
 

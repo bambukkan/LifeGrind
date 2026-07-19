@@ -15,3 +15,8 @@ public record UpdateUserExpAndCoinsRequest(
     int TotalExperience,
     decimal Coins
 );
+
+public record LoginUserRequest(
+    string Email,
+    string Password
+);

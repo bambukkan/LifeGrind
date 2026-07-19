@@ -17,6 +17,10 @@ public class UserRepository : IUserRepository
     {
         return context.Users.FirstOrDefaultAsync(u => u.Id == userId);
     }
+    public async Task<UserEntity?> GetUserByEmail(string Email)
+    {
+        return await context.Users.FirstOrDefaultAsync(u => u.Email == Email);
+    }
     public async Task Add(UserEntity user){
         await context.Users.AddAsync(user);
         await context.SaveChangesAsync();

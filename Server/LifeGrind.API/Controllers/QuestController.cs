@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
+[Authorize]
 [Route ("Quests")]
 public class QuestController : ControllerBase
 {
@@ -10,35 +12,59 @@ public class QuestController : ControllerBase
         QuestService = _QuestService;
     }
 
+    [HttpGet]
     public async Task<ActionResult<QuestEntity>> GetQuests(){
         var Quests = await QuestService.GetQuests();
         return Ok(Quests);
     }
-    public async Task<ActionResult<SkillEntity>> GetQuestByUserId(Guid userId){
-        var skills= await QuestService.GetQuestsByUserId(userId);
+    [HttpGet("by-userId")]
+    public async Task<ActionResult<SkillEntity>> GetQuestByUserId(){
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+        var skills= await QuestService.GetQuestsByUserId(userId.Value);
         return Ok(skills);
     }
-    public async Task<IActionResult> Add(Guid userId,CreateQuestRequest request){
-        await QuestService.Add(userId,request);
+    [HttpPost]
+    public async Task<IActionResult> Add([FromBody] CreateQuestRequest request){
+        var userId = GetCurrentUserId();
+        if(userId == null)
+        {
+            return Unauthorized();
+        }
+
+        await QuestService.Add(userId.Value,request);
         return Ok();
     }
-    public async Task<IActionResult> Update(Guid QuestId,UpdateQuestRequest request){
-        await QuestService.Update(QuestId,request);
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromRoute] Guid questId,[FromBody] UpdateQuestRequest request){
+        await QuestService.Update(questId,request);
         return Ok();
     }
-    public async Task<IActionResult> Delete(Guid QuestId)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid questId)
     {
-        await QuestService.Delete(QuestId);
+        await QuestService.Delete(questId);
         return Ok();
     }
-    public async Task<IActionResult> CompleteQuest(Guid QuestId)
+    [HttpPost("{id}/complete")]
+    public async Task<IActionResult> CompleteQuest([FromRoute] Guid questId)
     {
-        await QuestService.CompleteQuest(QuestId);
+        await QuestService.CompleteQuest(questId);
         return Ok();
     } 
-    public async Task<IActionResult> CancelQuest(Guid QuestId)
+    [HttpPost("{id}/cancel")]
+    public async Task<IActionResult> CancelQuest([FromRoute] Guid questId)
     {
-        await QuestService.CancelQuest(QuestId);
+        await QuestService.CancelQuest(questId);
         return Ok();
     } 
+
+    private Guid? GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst("UserId")?.Value;
+        return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+    }
 }

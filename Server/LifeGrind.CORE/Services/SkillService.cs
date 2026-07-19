@@ -23,6 +23,7 @@ public class SkillService : ISkillService
         };
         await skillRepository.Add(skill);
     }
+
     
     public async Task Update(Guid skillId, UpdateSkillRequest request)
     {
