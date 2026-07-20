@@ -7,9 +7,7 @@ public class QuestRepository : IQuestRepository
     {
         context = _context;
     }
-    public Task<List<QuestEntity>> GetQuests(){
-        return context.Quests.ToListAsync();
-    }
+
     public async Task<QuestEntity?> GetQuest(Guid questId)
     {
         return await context.Quests.FirstOrDefaultAsync(q => q.Id == questId);

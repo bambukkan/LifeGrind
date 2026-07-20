@@ -16,10 +16,7 @@ public class QuestService : IQuestService
         skillRepository = _skillRepository;
     }
 
-    public async Task<List<QuestEntity>> GetQuests()
-    {
-        return await questRepository.GetQuests();
-    }
+
 
     public async Task<List<QuestEntity>> GetQuestsByUserId(Guid userId)
     {
@@ -28,6 +25,16 @@ public class QuestService : IQuestService
 
     public async Task Add(Guid userId, CreateQuestRequest request)
     {
+        var skill = await skillRepository.GetSkill(request.SkillId);
+        if(skill == null)
+        {
+            throw new SkillNotExistException();
+        }
+        if (skill.UserId != userId)
+        {
+            throw new EntityNotFoundException("Попытка присвоить навык другого пользователя квесту!");
+        }
+
         var quest = new QuestEntity()
         {
             Id = Guid.NewGuid(),

@@ -120,8 +120,8 @@ function App() {
     try {
       setLoading(true);
       const [skillsData, questsData] = await Promise.all([
-        request("/Skills/by-userId"),
-        request("/Quests/by-userId")
+        request("/Skills"),
+        request("/Quests")
       ]);
 
       setSkills(skillsData || []);

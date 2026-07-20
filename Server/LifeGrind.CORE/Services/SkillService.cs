@@ -9,10 +9,6 @@ public class SkillService : ISkillService
         skillRepository = _SkillRepository;
     }
 
-    public async Task<List<SkillEntity>> GetSkills()
-    {
-        return await skillRepository.GetSkills();
-    }
 
     public async Task<List<SkillEntity>> GetSkillsByUserId(Guid userId)
     {

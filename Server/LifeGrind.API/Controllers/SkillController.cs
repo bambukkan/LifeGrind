@@ -12,13 +12,9 @@ public class SkillController : ControllerBase
         SkillService = _SkillService;
     }
 
+
     [HttpGet]
-    public async Task<ActionResult<SkillEntity>> GetSkills(){
-        var Skills = await SkillService.GetSkills();
-        return Ok(Skills);
-    }
-    [HttpGet("by-userId")]
-    public async Task<ActionResult<SkillEntity>> GetSkillsByUserId(){
+    public async Task<ActionResult<List<SkillEntity>>> GetSkillsByUserId(){
         var userId = GetCurrentUserId();
         if(userId == null)
         {

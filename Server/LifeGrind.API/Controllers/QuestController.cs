@@ -13,19 +13,14 @@ public class QuestController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<QuestEntity>> GetQuests(){
-        var Quests = await QuestService.GetQuests();
-        return Ok(Quests);
-    }
-    [HttpGet("by-userId")]
-    public async Task<ActionResult<SkillEntity>> GetQuestsByUserId(){
+    public async Task<ActionResult<List<QuestEntity>>> GetQuestsByUserId(){
         var userId = GetCurrentUserId();
         if(userId == null)
         {
             return Unauthorized();
         }
-        var skills= await QuestService.GetQuestsByUserId(userId.Value);
-        return Ok(skills);
+        var quests= await QuestService.GetQuestsByUserId(userId.Value);
+        return Ok(quests);
     }
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] CreateQuestRequest request){

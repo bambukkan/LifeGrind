@@ -9,20 +9,12 @@ public class SkillRepository : ISkillRepository
         context = _context;
     }
 
-    public Task<List<SkillEntity>> GetSkills()
-    {
-        return context.Skills.ToListAsync();
-    }
 
     public async Task<SkillEntity?> GetSkill(Guid skillId)
     {
         return await context.Skills.FirstOrDefaultAsync(s => s.Id == skillId);
     }
 
-    public async Task<SkillEntity?> GetSkillByUserId(Guid userId)
-    {
-        return await context.Skills.FirstOrDefaultAsync(s => s.UserId == userId);
-    }
 
     public Task<List<SkillEntity>> GetSkillsByUserId(Guid userId)
     {
