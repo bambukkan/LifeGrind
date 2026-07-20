@@ -14,6 +14,25 @@ const statusNames = {
   2: "Cancelled"
 };
 
+function formatApiError(payload, fallback) {
+  if (!payload) {
+    return fallback;
+  }
+
+  const validationErrors = payload.errors || payload.Errors;
+  if (validationErrors) {
+    return Object.entries(validationErrors)
+      .flatMap(([field, messages]) =>
+        Array.isArray(messages)
+          ? messages.map((message) => `${field}: ${message}`)
+          : [`${field}: ${messages}`]
+      )
+      .join("; ");
+  }
+
+  return payload.message || payload.Message || payload.error || payload.Error || fallback;
+}
+
 const defaultSkill = {
   name: "",
   description: "",
@@ -77,8 +96,16 @@ function App() {
     });
 
     if (!response.ok) {
+      const contentType = response.headers.get("content-type") || "";
+      const fallback = `HTTP ${response.status}`;
+
+      if (contentType.includes("application/json")) {
+        const payload = await response.json();
+        throw new Error(formatApiError(payload, fallback));
+      }
+
       const text = await response.text();
-      throw new Error(text || `HTTP ${response.status}`);
+      throw new Error(text || fallback);
     }
 
     const contentType = response.headers.get("content-type") || "";

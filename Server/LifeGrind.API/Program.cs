@@ -66,8 +66,16 @@ builder.Services.AddDbContext<LifeGrindDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("LifeGrindDbContext"));
 });
 
-builder.Services.AddControllers();
-
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<ValidationFilter>();
+    })
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+    
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
