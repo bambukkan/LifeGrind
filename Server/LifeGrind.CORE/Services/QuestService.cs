@@ -122,7 +122,7 @@ public class QuestService : IQuestService
 
         if (quest.UserId != userId)
         {
-            throw new EntityNotFoundException("Attempt to access another user's quest.");
+            throw new EntityNotFoundException("Попытка получить квест чужого пользователя");
         }
 
         return quest;

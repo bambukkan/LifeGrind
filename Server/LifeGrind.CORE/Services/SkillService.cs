@@ -43,7 +43,7 @@ public class SkillService : ISkillService
 
         if (skill.UserId != userId)
         {
-            throw new EntityNotFoundException("Attempt to update another user's skill.");
+            throw new EntityNotFoundException("Попытка изменить скилл чужого пользователя");
         }
 
         await skillRepository.Update(skillId, request.Name, request.Description, request.Experience);
@@ -59,7 +59,7 @@ public class SkillService : ISkillService
 
         if (skill.UserId != userId)
         {
-            throw new EntityNotFoundException("Attempt to delete another user's skill.");
+            throw new EntityNotFoundException("Попытка удалить скилл чужого пользователя");
         }
 
         await skillRepository.Delete(skillId);
