@@ -57,7 +57,19 @@ const defaultQuest = {
   skillId: ""
 };
 
+const defaultProfileForm = {
+  name: "",
+  email: "",
+  oldPassword: "",
+  newPassword: ""
+};
+
+function getCurrentPage() {
+  return window.location.pathname === "/profile" ? "profile" : "dashboard";
+}
+
 function App() {
+  const [page, setPage] = useState(getCurrentPage);
   const [isAuthed, setIsAuthed] = useState(false);
   const [mode, setMode] = useState("login");
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
@@ -66,6 +78,7 @@ function App() {
   const [editingSkill, setEditingSkill] = useState(null);
   const [editingQuest, setEditingQuest] = useState(null);
   const [user, setUser] = useState(null);
+  const [profileForm, setProfileForm] = useState(defaultProfileForm);
   const [skills, setSkills] = useState([]);
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -83,6 +96,30 @@ function App() {
   useEffect(() => {
     refreshData();
   }, []);
+
+  useEffect(() => {
+    const handlePopState = () => setPage(getCurrentPage());
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name,
+        email: user.email,
+        oldPassword: "",
+        newPassword: ""
+      });
+    }
+  }, [user]);
+
+  function navigate(path) {
+    window.history.pushState({}, "", path);
+    setPage(getCurrentPage());
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   async function request(path, options = {}) {
     const response = await fetch(`${API_URL}${path}`, {
@@ -162,6 +199,66 @@ function App() {
       await refreshData();
     } catch (error) {
       setMessage(`Auth error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updateProfile(event) {
+    event.preventDefault();
+
+    try {
+      setLoading(true);
+      await request("/Users", {
+        method: "PUT",
+        body: JSON.stringify(profileForm)
+      });
+
+      setMessage("Профиль обновлён.");
+      await refreshData();
+    } catch (error) {
+      setMessage(`Profile error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function logout() {
+    try {
+      setLoading(true);
+      await request("/Users/logout", { method: "DELETE" });
+      setIsAuthed(false);
+      setUser(null);
+      setSkills([]);
+      setQuests([]);
+      setProfileForm(defaultProfileForm);
+      navigate("/");
+      setMessage("Вы вышли из аккаунта.");
+    } catch (error) {
+      setMessage(`Logout error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function deleteAccount() {
+    if (!window.confirm("Удалить аккаунт вместе со всеми навыками и квестами? Это действие нельзя отменить.")) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await request("/Users", { method: "DELETE" });
+      await request("/Users/logout", { method: "DELETE" });
+      setIsAuthed(false);
+      setUser(null);
+      setSkills([]);
+      setQuests([]);
+      setProfileForm(defaultProfileForm);
+      navigate("/");
+      setMessage("Аккаунт удалён.");
+    } catch (error) {
+      setMessage(`Profile error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -355,34 +452,32 @@ function App() {
 
   return (
     <main className="app-shell">
-      <section className="topbar">
-        <div>
-          <p className="eyebrow">LifeGrind Prototype</p>
-          <h1>Real Life RPG</h1>
-        </div>
-        <button className="ghost-button" onClick={refreshData} disabled={loading}>
-          Обновить
-        </button>
-      </section>
-
-      <section className="status-strip">
-        <div>
-          <span className="stat-label">Earned XP</span>
-          <strong>{user?.totalExperience ?? 0}</strong>
-        </div>
-        <div>
-          <span className="stat-label">Coins</span>
-          <strong>{user?.coins ?? 0}</strong>
-        </div>
-        <div>
-          <span className="stat-label">Skills</span>
-          <strong>{skills.length}</strong>
-        </div>
-        <div>
-          <span className="stat-label">Quests</span>
-          <strong>{quests.length}</strong>
-        </div>
-      </section>
+      {isAuthed ? (
+        <section className="player-banner">
+          <button className="player-identity" type="button" onClick={() => navigate("/profile")}>
+            <span className="avatar" aria-hidden="true">{user?.name?.slice(0, 1).toUpperCase() || "U"}</span>
+            <span>
+              <span className="player-label">Профиль</span>
+              <strong>{user?.name || "Герой"}</strong>
+              <span className="player-progress">Уровень {user?.level ?? 1} · {user?.experienceForNextLevel ?? 100} XP до следующего</span>
+            </span>
+          </button>
+          <div className="player-stats">
+            <div><span>XP</span><strong>{user?.totalExperience ?? 0}</strong></div>
+            <div><span>Coins</span><strong>{user?.coins ?? 0}</strong></div>
+            <div><span>Skills</span><strong>{skills.length}</strong></div>
+            <div><span>Quests</span><strong>{quests.length}</strong></div>
+          </div>
+          <button className="ghost-button refresh-button" onClick={refreshData} disabled={loading}>Обновить</button>
+        </section>
+      ) : (
+        <section className="topbar">
+          <div>
+            <p className="eyebrow">LifeGrind Prototype</p>
+            <h1>Real Life RPG</h1>
+          </div>
+        </section>
+      )}
 
       <p className={`message ${isAuthed ? "good" : ""}`}>{loading ? "Загрузка..." : message}</p>
 
@@ -444,7 +539,7 @@ function App() {
         </section>
       )}
 
-      {isAuthed && (
+      {isAuthed && page === "dashboard" && (
         <section className="dashboard-grid">
           <form className="panel" onSubmit={createSkill}>
             <div className="panel-heading">
@@ -613,7 +708,10 @@ function App() {
                       <p>{skill.description || "Описание не задано."}</p>
                     </div>
                     <div className="item-meta">
-                      <span>{skill.experience} XP</span>
+                      <span className="skill-progress">
+                        <strong>{skill.experience} XP</strong>
+                        <small>Уровень {skill.level ?? 1} · {skill.experienceForNextLevel ?? 100} XP до следующего</small>
+                      </span>
                       <button className="ghost-button" onClick={() => startSkillEdit(skill)} type="button">Изменить</button>
                       <button className="danger-button" onClick={() => deleteSkill(skill.id)} type="button">Удалить</button>
                     </div>
@@ -745,6 +843,80 @@ function App() {
               ))}
             </div>
           </section>
+        </section>
+      )}
+
+      {isAuthed && page === "profile" && (
+        <section className="profile-page">
+          <div className="page-heading">
+            <div>
+              <p className="eyebrow">Hero profile</p>
+              <h1>{user?.name || "Профиль"}</h1>
+              <p className="profile-email">{user?.email}</p>
+              <p className="profile-level">Уровень {user?.level ?? 1} · {user?.experienceForNextLevel ?? 100} XP до следующего уровня</p>
+            </div>
+            <button className="ghost-button" type="button" onClick={() => navigate("/")}>На главную</button>
+          </div>
+
+          <div className="profile-grid">
+            <form className="panel" onSubmit={updateProfile}>
+              <div className="panel-heading">
+                <p className="eyebrow">Account</p>
+                <h2>Данные аккаунта</h2>
+              </div>
+
+              <label>
+                Имя
+                <input
+                  value={profileForm.name}
+                  onChange={(event) => setProfileForm({ ...profileForm, name: event.target.value })}
+                  required
+                />
+              </label>
+
+              <label>
+                Email
+                <input
+                  type="email"
+                  value={profileForm.email}
+                  onChange={(event) => setProfileForm({ ...profileForm, email: event.target.value })}
+                  required
+                />
+              </label>
+
+              <label>
+                Текущий пароль
+                <input
+                  type="password"
+                  value={profileForm.oldPassword}
+                  onChange={(event) => setProfileForm({ ...profileForm, oldPassword: event.target.value })}
+                  required
+                />
+              </label>
+
+              <label>
+                Новый пароль
+                <input
+                  type="password"
+                  value={profileForm.newPassword}
+                  onChange={(event) => setProfileForm({ ...profileForm, newPassword: event.target.value })}
+                  required
+                />
+              </label>
+
+              <button className="primary-button" type="submit" disabled={loading}>Сохранить изменения</button>
+            </form>
+
+            <section className="panel account-actions">
+              <div className="panel-heading">
+                <p className="eyebrow">Session</p>
+                <h2>Аккаунт</h2>
+              </div>
+              <p>Выйди на этом устройстве или полностью удали профиль вместе с его данными.</p>
+              <button className="ghost-button" type="button" onClick={logout} disabled={loading}>Выйти из аккаунта</button>
+              <button className="danger-button" type="button" onClick={deleteAccount} disabled={loading}>Удалить аккаунт</button>
+            </section>
+          </div>
         </section>
       )}
     </main>

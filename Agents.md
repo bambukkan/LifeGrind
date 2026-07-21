@@ -121,6 +121,10 @@ LifeGrind — учебный ASP.NET Core pet-проект, превращающ
   all users. It reads `UserId` from the JWT claim and returns `UserResponse`.
 - `UserService.GetMe` throws `EntityNotFoundException` when a valid token
   refers to a deleted or missing user.
+- `PUT /Users` updates the current user's name, email, and password after
+  verifying the current password. It rejects an email belonging to another user.
+- `DELETE /Users/logout` clears the auth cookie; `DELETE /Users` deletes the
+  current account.
 
 ### Validation and API errors
 - FluentValidation validators are registered from the API assembly.
@@ -136,8 +140,10 @@ LifeGrind — учебный ASP.NET Core pet-проект, превращающ
 - The Vite React client sends requests through `/api`, proxied to
   `http://localhost:5074`, and includes cookies with `credentials: "include"`.
 - It uses the response fields from `GET /Skills` and `GET /Quests` directly.
-- The dashboard currently calculates earned XP and coins from completed quests;
-  it does not yet call `GET /Users`.
+- The dashboard loads `GET /Users` and displays the stored `TotalExperience`
+  and `Coins` from `UserResponse`; it does not recalculate the economy from quests.
+- The client has a `/profile` page for viewing and updating the current account,
+  logging out, and deleting the account. The top player banner links to it.
 
 ### Known next steps, not mandatory for this MVP pass
 - `CompleteQuest` already runs the user reward, skill XP reward, and quest

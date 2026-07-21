@@ -14,5 +14,7 @@ public record SkillResponse(
     Guid Id,
     string Name,
     string Description,
-    int Experience
+    int Experience,
+    int Level,
+    int ExperienceForNextLevel
 );

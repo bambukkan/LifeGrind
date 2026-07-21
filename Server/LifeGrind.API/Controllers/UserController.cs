@@ -22,7 +22,7 @@ public class UserController : ControllerBase
             return Unauthorized();
         }
         var user = await userService.GetMe(userId.Value);
-        
+
         return Ok(ToResponse(user));
     }
 
@@ -48,6 +48,13 @@ public class UserController : ControllerBase
             "Access-cookies",
             token,
             CreateAuthCookieOptions());
+
+        return Ok();
+    }
+    [HttpDelete("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        Response.Cookies.Delete("Access-cookies");
 
         return Ok();
     }
@@ -103,7 +110,9 @@ public class UserController : ControllerBase
             user.Name,
             user.Email,
             user.TotalExperience,
-            user.Coins
+            user.Coins,
+            Level: user.TotalExperience / 100 + 1,
+            ExperienceForNextLevel: 100 - user.TotalExperience % 100 
         );
     }
 }

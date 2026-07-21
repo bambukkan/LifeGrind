@@ -21,5 +21,7 @@ public record UserResponse(
     string Name,
     string Email,
     int TotalExperience,
-    decimal Coins
+    decimal Coins,
+    int Level,
+    int ExperienceForNextLevel
 );

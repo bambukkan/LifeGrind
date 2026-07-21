@@ -64,6 +64,12 @@ public class UserService : IUserService
             throw new InvalidCredentialsException();
         }
 
+        var existingUser = await userRepository.GetUserByEmail(request.Email);
+        if (existingUser != null && existingUser.Id != userId)
+        {
+            throw new EmailAlreadyExistsException();
+        }
+
         var newPasswordHash = passwordHasher.GeneratePasswordHash(request.newPassword);
 
         await userRepository.Update(

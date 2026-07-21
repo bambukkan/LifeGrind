@@ -70,7 +70,9 @@ public class SkillController : ControllerBase
             skill.Id,
             skill.Name,
             skill.Description,
-            skill.Experience
+            skill.Experience,
+            Level: skill.Experience / 100 + 1,
+            ExperienceForNextLevel: 100 - skill.Experience % 100 
         );
     }
 }
