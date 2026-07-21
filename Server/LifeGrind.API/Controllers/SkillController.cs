@@ -71,8 +71,8 @@ public class SkillController : ControllerBase
             skill.Name,
             skill.Description,
             skill.Experience,
-            Level: skill.Experience / 100 + 1,
-            ExperienceForNextLevel: 100 - skill.Experience % 100 
+            Level: LevelCalculator.GetLevel(skill.Experience),
+            ExperienceForNextLevel: LevelCalculator.GetExperienceForNextLevel(skill.Experience)
         );
     }
 }

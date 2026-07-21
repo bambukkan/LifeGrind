@@ -111,8 +111,8 @@ public class UserController : ControllerBase
             user.Email,
             user.TotalExperience,
             user.Coins,
-            Level: user.TotalExperience / 100 + 1,
-            ExperienceForNextLevel: 100 - user.TotalExperience % 100 
+            Level: LevelCalculator.GetLevel(user.TotalExperience),
+            ExperienceForNextLevel: LevelCalculator.GetExperienceForNextLevel(user.TotalExperience)
         );
     }
 }
