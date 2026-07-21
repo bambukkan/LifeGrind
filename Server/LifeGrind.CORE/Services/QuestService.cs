@@ -57,6 +57,11 @@ public class QuestService : IQuestService
     {
         var quest = await GetOwnedQuest(userId, questId);
 
+        if(quest.Status != QuestStatus.Active)
+        {
+            throw new QuestAlreadyCompletedOrCancelledException();
+        }
+
         await questRepository.Update(
             quest.Id,
             request.Title,
@@ -69,7 +74,10 @@ public class QuestService : IQuestService
     public async Task Delete(Guid userId, Guid questId)
     {
         var quest = await GetOwnedQuest(userId, questId);
-
+        if(quest.Status != QuestStatus.Active)
+        {
+            throw new QuestAlreadyCompletedOrCancelledException();
+        }
         await questRepository.Delete(quest.Id);
     }
 

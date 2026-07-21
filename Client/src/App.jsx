@@ -14,6 +14,15 @@ const statusNames = {
   2: "Cancelled"
 };
 
+const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+  dateStyle: "medium",
+  timeStyle: "short"
+});
+
+function formatDateTime(value) {
+  return value ? dateTimeFormatter.format(new Date(value)) : "-";
+}
+
 function formatApiError(payload, fallback) {
   if (!payload) {
     return fallback;
@@ -56,23 +65,11 @@ function App() {
   const [questForm, setQuestForm] = useState(defaultQuest);
   const [editingSkill, setEditingSkill] = useState(null);
   const [editingQuest, setEditingQuest] = useState(null);
+  const [user, setUser] = useState(null);
   const [skills, setSkills] = useState([]);
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("Backend: http://localhost:5074");
-
-  const totals = useMemo(() => {
-    return quests.reduce(
-      (acc, quest) => {
-        if (quest.status === 1) {
-          acc.xp += quest.experienceReward || 0;
-          acc.coins += quest.coinReward || 0;
-        }
-        return acc;
-      },
-      { xp: 0, coins: 0 }
-    );
-  }, [quests]);
 
   const questGroups = useMemo(
     () => [
@@ -121,17 +118,20 @@ function App() {
   async function refreshData() {
     try {
       setLoading(true);
-      const [skillsData, questsData] = await Promise.all([
+      const [userData, skillsData, questsData] = await Promise.all([
+        request("/Users"),
         request("/Skills"),
         request("/Quests")
       ]);
 
+      setUser(userData);
       setSkills(skillsData || []);
       setQuests(questsData || []);
       setIsAuthed(true);
       setMessage("Данные загружены.");
     } catch {
       setIsAuthed(false);
+      setUser(null);
       setSkills([]);
       setQuests([]);
       setMessage("Зарегистрируйся или войди, чтобы начать гринд.");
@@ -368,11 +368,11 @@ function App() {
       <section className="status-strip">
         <div>
           <span className="stat-label">Earned XP</span>
-          <strong>{totals.xp}</strong>
+          <strong>{user?.totalExperience ?? 0}</strong>
         </div>
         <div>
           <span className="stat-label">Coins</span>
-          <strong>{totals.coins}</strong>
+          <strong>{user?.coins ?? 0}</strong>
         </div>
         <div>
           <span className="stat-label">Skills</span>
@@ -708,29 +708,35 @@ function App() {
                               {getSkillName(quest.skillId)} · {difficultyOptions[quest.difficulty]?.label || "Unknown"} ·{" "}
                               {quest.experienceReward} XP · {quest.coinReward} coins
                             </p>
+                            <p className="subtle">
+                              Создан: {formatDateTime(quest.createdAt)}
+                              {quest.completedAt && (
+                                <> · {quest.status === 1 ? "Завершён" : "Отменён"}: {formatDateTime(quest.completedAt)}</>
+                              )}
+                            </p>
                           </div>
-                          <div className="quest-actions">
-                            <button className="ghost-button" type="button" onClick={() => startQuestEdit(quest)} disabled={quest.status !== 0}>Изменить</button>
-                            <button
-                              className="success-button"
-                              type="button"
-                              onClick={() => questAction(quest.id, "complete")}
-                              disabled={quest.status !== 0}
-                            >
-                              Complete
-                            </button>
-                            <button
-                              className="ghost-button"
-                              type="button"
-                              onClick={() => questAction(quest.id, "cancel")}
-                              disabled={quest.status !== 0}
-                            >
-                              Cancel
-                            </button>
-                            <button className="danger-button" type="button" onClick={() => deleteQuest(quest.id)}>
-                              Delete
-                            </button>
-                          </div>
+                          {quest.status === 0 && (
+                            <div className="quest-actions">
+                              <button className="ghost-button" type="button" onClick={() => startQuestEdit(quest)}>Изменить</button>
+                              <button
+                                className="success-button"
+                                type="button"
+                                onClick={() => questAction(quest.id, "complete")}
+                              >
+                                Complete
+                              </button>
+                              <button
+                                className="ghost-button"
+                                type="button"
+                                onClick={() => questAction(quest.id, "cancel")}
+                              >
+                                Cancel
+                              </button>
+                              <button className="danger-button" type="button" onClick={() => deleteQuest(quest.id)}>
+                                Delete
+                              </button>
+                            </div>
+                          )}
                         </article>
                       )
                     ))}

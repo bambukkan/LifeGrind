@@ -140,8 +140,10 @@ LifeGrind — учебный ASP.NET Core pet-проект, превращающ
   it does not yet call `GET /Users`.
 
 ### Known next steps, not mandatory for this MVP pass
-- Learn and add a transaction around `CompleteQuest`, because it changes the
-  user, skill, and quest in one business action.
+- `CompleteQuest` already runs the user reward, skill XP reward, and quest
+  status update through `ITransactionManager` in one EF Core transaction.
+- A later concurrency improvement is still needed to make the transition from
+  `Active` to `Completed` atomic against two simultaneous completion requests.
 - Decide whether completed or cancelled quests should be immutable for updates.
 - Add a unique email constraint and registration check before treating auth as
   production-ready.
