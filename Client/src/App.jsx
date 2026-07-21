@@ -54,6 +54,8 @@ function App() {
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
   const [skillForm, setSkillForm] = useState(defaultSkill);
   const [questForm, setQuestForm] = useState(defaultQuest);
+  const [editingSkill, setEditingSkill] = useState(null);
+  const [editingQuest, setEditingQuest] = useState(null);
   const [skills, setSkills] = useState([]);
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -168,6 +170,11 @@ function App() {
   async function createSkill(event) {
     event.preventDefault();
 
+    if (!skillForm.name.trim()) {
+      setMessage("Название навыка не может быть пустым.");
+      return;
+    }
+
     try {
       setLoading(true);
       await request("/Skills", {
@@ -190,6 +197,11 @@ function App() {
 
   async function createQuest(event) {
     event.preventDefault();
+
+    if (!questForm.title.trim()) {
+      setMessage("Название квеста не может быть пустым.");
+      return;
+    }
 
     if (!questForm.skillId) {
       setMessage("Сначала выбери навык для квеста.");
@@ -252,6 +264,86 @@ function App() {
       await refreshData();
     } catch (error) {
       setMessage(`Delete error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function startSkillEdit(skill) {
+    setEditingSkill({
+      id: skill.id,
+      name: skill.name,
+      description: skill.description || "",
+      experience: skill.experience
+    });
+  }
+
+  async function updateSkill(event) {
+    event.preventDefault();
+
+    if (!editingSkill.name.trim()) {
+      setMessage("Название навыка не может быть пустым.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await request(`/Skills/${editingSkill.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          name: editingSkill.name,
+          description: editingSkill.description,
+          experience: Number(editingSkill.experience)
+        })
+      });
+
+      setEditingSkill(null);
+      setMessage("Навык обновлён.");
+      await refreshData();
+    } catch (error) {
+      setMessage(`Skill error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function startQuestEdit(quest) {
+    setEditingQuest({
+      id: quest.id,
+      title: quest.title,
+      description: quest.description || "",
+      difficulty: quest.difficulty,
+      experienceReward: quest.experienceReward,
+      coinReward: quest.coinReward
+    });
+  }
+
+  async function updateQuest(event) {
+    event.preventDefault();
+
+    if (!editingQuest.title.trim()) {
+      setMessage("Название квеста не может быть пустым.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await request(`/Quests/${editingQuest.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          title: editingQuest.title,
+          description: editingQuest.description,
+          difficulty: Number(editingQuest.difficulty),
+          experienceReward: Number(editingQuest.experienceReward),
+          coinReward: Number(editingQuest.coinReward)
+        })
+      });
+
+      setEditingQuest(null);
+      setMessage("Квест обновлён.");
+      await refreshData();
+    } catch (error) {
+      setMessage(`Quest error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -366,6 +458,7 @@ function App() {
                 value={skillForm.name}
                 onChange={(event) => setSkillForm({ ...skillForm, name: event.target.value })}
                 placeholder="English"
+                required
               />
             </label>
 
@@ -404,6 +497,7 @@ function App() {
                 value={questForm.title}
                 onChange={(event) => setQuestForm({ ...questForm, title: event.target.value })}
                 placeholder="Выучить 30 слов"
+                required
               />
             </label>
 
@@ -480,18 +574,51 @@ function App() {
             <div className="list-stack">
               {skills.length === 0 && <p className="empty">Пока нет навыков.</p>}
               {skills.map((skill) => (
-                <article className="item-card" key={skill.id}>
-                  <div>
-                    <h3>{skill.name}</h3>
-                    <p>{skill.description || "Описание не задано."}</p>
-                  </div>
-                  <div className="item-meta">
-                    <span>{skill.experience} XP</span>
-                    <button className="danger-button" onClick={() => deleteSkill(skill.id)} type="button">
-                      Удалить
-                    </button>
-                  </div>
-                </article>
+                editingSkill?.id === skill.id ? (
+                  <form className="item-card edit-card" key={skill.id} onSubmit={updateSkill}>
+                    <label>
+                      Название
+                      <input
+                        value={editingSkill.name}
+                        onChange={(event) => setEditingSkill({ ...editingSkill, name: event.target.value })}
+                        required
+                      />
+                    </label>
+                    <label>
+                      Описание
+                      <textarea
+                        value={editingSkill.description}
+                        onChange={(event) => setEditingSkill({ ...editingSkill, description: event.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Опыт
+                      <input
+                        type="number"
+                        value={editingSkill.experience}
+                        onChange={(event) => setEditingSkill({ ...editingSkill, experience: event.target.value })}
+                        min="0"
+                        required
+                      />
+                    </label>
+                    <div className="inline-actions">
+                      <button className="primary-button" type="submit" disabled={loading}>Сохранить</button>
+                      <button className="ghost-button" type="button" onClick={() => setEditingSkill(null)} disabled={loading}>Отмена</button>
+                    </div>
+                  </form>
+                ) : (
+                  <article className="item-card" key={skill.id}>
+                    <div>
+                      <h3>{skill.name}</h3>
+                      <p>{skill.description || "Описание не задано."}</p>
+                    </div>
+                    <div className="item-meta">
+                      <span>{skill.experience} XP</span>
+                      <button className="ghost-button" onClick={() => startSkillEdit(skill)} type="button">Изменить</button>
+                      <button className="danger-button" onClick={() => deleteSkill(skill.id)} type="button">Удалить</button>
+                    </div>
+                  </article>
+                )
               ))}
             </div>
           </section>
@@ -514,40 +641,98 @@ function App() {
                   <div className="list-stack">
                     {group.items.length === 0 && <p className="empty">No quests.</p>}
                     {group.items.map((quest) => (
-                      <article className={`item-card quest-card status-${quest.status}`} key={quest.id}>
-                        <div>
-                          <div className="quest-title-row">
-                            <h3>{quest.title}</h3>
-                            <span>{statusNames[quest.status] || quest.status}</span>
+                      editingQuest?.id === quest.id ? (
+                        <form className="item-card edit-card" key={quest.id} onSubmit={updateQuest}>
+                          <label>
+                            Название
+                            <input
+                              value={editingQuest.title}
+                              onChange={(event) => setEditingQuest({ ...editingQuest, title: event.target.value })}
+                              required
+                            />
+                          </label>
+                          <label>
+                            Описание
+                            <textarea
+                              value={editingQuest.description}
+                              onChange={(event) => setEditingQuest({ ...editingQuest, description: event.target.value })}
+                            />
+                          </label>
+                          <div className="split-row">
+                            <label>
+                              Сложность
+                              <select
+                                value={editingQuest.difficulty}
+                                onChange={(event) => setEditingQuest({ ...editingQuest, difficulty: event.target.value })}
+                              >
+                                {difficultyOptions.map((option) => (
+                                  <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                              </select>
+                            </label>
+                            <label>
+                              XP
+                              <input
+                                type="number"
+                                min="1"
+                                value={editingQuest.experienceReward}
+                                onChange={(event) => setEditingQuest({ ...editingQuest, experienceReward: event.target.value })}
+                                required
+                              />
+                            </label>
                           </div>
-                          <p>{quest.description || "Описание не задано."}</p>
-                          <p className="subtle">
-                            {getSkillName(quest.skillId)} · {difficultyOptions[quest.difficulty]?.label || "Unknown"} ·{" "}
-                            {quest.experienceReward} XP · {quest.coinReward} coins
-                          </p>
-                        </div>
-                        <div className="quest-actions">
-                          <button
-                            className="success-button"
-                            type="button"
-                            onClick={() => questAction(quest.id, "complete")}
-                            disabled={quest.status !== 0}
-                          >
-                            Complete
-                          </button>
-                          <button
-                            className="ghost-button"
-                            type="button"
-                            onClick={() => questAction(quest.id, "cancel")}
-                            disabled={quest.status !== 0}
-                          >
-                            Cancel
-                          </button>
-                          <button className="danger-button" type="button" onClick={() => deleteQuest(quest.id)}>
-                            Delete
-                          </button>
-                        </div>
-                      </article>
+                          <label>
+                            Coins
+                            <input
+                              type="number"
+                              min="1"
+                              value={editingQuest.coinReward}
+                              onChange={(event) => setEditingQuest({ ...editingQuest, coinReward: event.target.value })}
+                              required
+                            />
+                          </label>
+                          <div className="inline-actions">
+                            <button className="primary-button" type="submit" disabled={loading}>Сохранить</button>
+                            <button className="ghost-button" type="button" onClick={() => setEditingQuest(null)} disabled={loading}>Отмена</button>
+                          </div>
+                        </form>
+                      ) : (
+                        <article className={`item-card quest-card status-${quest.status}`} key={quest.id}>
+                          <div>
+                            <div className="quest-title-row">
+                              <h3>{quest.title}</h3>
+                              <span>{statusNames[quest.status] || quest.status}</span>
+                            </div>
+                            <p>{quest.description || "Описание не задано."}</p>
+                            <p className="subtle">
+                              {getSkillName(quest.skillId)} · {difficultyOptions[quest.difficulty]?.label || "Unknown"} ·{" "}
+                              {quest.experienceReward} XP · {quest.coinReward} coins
+                            </p>
+                          </div>
+                          <div className="quest-actions">
+                            <button className="ghost-button" type="button" onClick={() => startQuestEdit(quest)} disabled={quest.status !== 0}>Изменить</button>
+                            <button
+                              className="success-button"
+                              type="button"
+                              onClick={() => questAction(quest.id, "complete")}
+                              disabled={quest.status !== 0}
+                            >
+                              Complete
+                            </button>
+                            <button
+                              className="ghost-button"
+                              type="button"
+                              onClick={() => questAction(quest.id, "cancel")}
+                              disabled={quest.status !== 0}
+                            >
+                              Cancel
+                            </button>
+                            <button className="danger-button" type="button" onClick={() => deleteQuest(quest.id)}>
+                              Delete
+                            </button>
+                          </div>
+                        </article>
+                      )
                     ))}
                   </div>
                 </section>

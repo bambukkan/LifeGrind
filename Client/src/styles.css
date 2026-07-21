@@ -316,6 +316,10 @@ select:focus {
   background: rgba(255, 255, 255, 0.045);
 }
 
+.edit-card {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .item-card p {
   margin-bottom: 0;
   color: #aeb8c9;
@@ -326,6 +330,17 @@ select:focus {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.inline-actions button {
+  min-height: 36px;
+  padding: 0 12px;
 }
 
 .item-meta span {

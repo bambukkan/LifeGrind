@@ -104,3 +104,47 @@ LifeGrind — учебный ASP.NET Core pet-проект, превращающ
 Учесть, что это ещё только начало, чтобы проверить, как вообще будет
 работать базовый цикл. Сущностей и игровых механизмов позже может стать
 больше, но сейчас важно не перегрузить проект раньше времени.
+
+## Current implementation notes
+
+### Response DTOs
+- API responses use `UserResponse`, `SkillResponse`, and `QuestResponse`;
+  EF entities and navigation properties are not returned to the client.
+- Controllers map entities to response DTOs with private `ToResponse` methods.
+- `UserResponse` contains `Id`, `Name`, `Email`, `TotalExperience`, and `Coins`.
+- `SkillResponse` contains its own fields only; it does not expose `UserId`.
+- `QuestResponse` contains `SkillId`, which the client needs to connect a
+  quest with its skill, but does not expose `UserId`.
+
+### Current-user endpoint
+- `GET /Users` is the current-user endpoint (`GetMe` action), not a list of
+  all users. It reads `UserId` from the JWT claim and returns `UserResponse`.
+- `UserService.GetMe` throws `EntityNotFoundException` when a valid token
+  refers to a deleted or missing user.
+
+### Validation and API errors
+- FluentValidation validators are registered from the API assembly.
+- `ValidationFilter` is registered globally through `AddControllers` and
+  returns HTTP 400 with a property-to-errors dictionary for invalid request DTOs.
+- `GlobalExceptionMiddlware` converts `DomainException` to HTTP 400 and
+  `EntityNotFoundException` to HTTP 404. Unexpected exceptions become HTTP 500.
+- Response DTOs do not need FluentValidation; validate only input DTOs.
+- Do not use `NotEmpty()` for `QuestDifficulty`: `Easy` is enum value `0` and
+  would be rejected. Use `IsInEnum()` for this field instead.
+
+### Client
+- The Vite React client sends requests through `/api`, proxied to
+  `http://localhost:5074`, and includes cookies with `credentials: "include"`.
+- It uses the response fields from `GET /Skills` and `GET /Quests` directly.
+- The dashboard currently calculates earned XP and coins from completed quests;
+  it does not yet call `GET /Users`.
+
+### Known next steps, not mandatory for this MVP pass
+- Learn and add a transaction around `CompleteQuest`, because it changes the
+  user, skill, and quest in one business action.
+- Decide whether completed or cancelled quests should be immutable for updates.
+- Add a unique email constraint and registration check before treating auth as
+  production-ready.
+- `GetQuestByUserId` is unused and can later be removed from the quest repository.
+- After confirming every public endpoint returns response DTOs, the
+  `ReferenceHandler.IgnoreCycles` JSON setting can be removed.

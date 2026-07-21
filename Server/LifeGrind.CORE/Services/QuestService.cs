@@ -5,15 +5,18 @@ public class QuestService : IQuestService
     private readonly IQuestRepository questRepository;
     private readonly IUserRepository userRepository;
     private readonly ISkillRepository skillRepository;
+    private readonly ITransactionManager transactionManager;
 
     public QuestService(
         IQuestRepository _QuestRepository,
         IUserRepository _userRepository,
-        ISkillRepository _skillRepository)
+        ISkillRepository _skillRepository,
+        ITransactionManager _transactionManager)
     {
         questRepository = _QuestRepository;
         userRepository = _userRepository;
         skillRepository = _skillRepository;
+        transactionManager = _transactionManager;
     }
 
 
@@ -84,19 +87,21 @@ public class QuestService : IQuestService
             throw new QuestHasCancelled();
         }
 
-        await userRepository.UpdateUserExpAndCoins(
-            quest.UserId,
-            quest.ExperienceReward,
-            quest.CoinReward);
+        await transactionManager.ExecuteAsync(async () => {
+            await userRepository.UpdateUserExpAndCoins(
+                quest.UserId,
+                quest.ExperienceReward,
+                quest.CoinReward);
 
-        await skillRepository.AddExperience(
-            quest.SkillId,
-            quest.ExperienceReward);
+            await skillRepository.AddExperience(
+                quest.SkillId,
+                quest.ExperienceReward);
 
-        await questRepository.CompleteQuest(
-            quest.Id,
-            QuestStatus.Completed,
-            DateTime.UtcNow);
+            await questRepository.CompleteQuest(
+                quest.Id,
+                QuestStatus.Completed,
+                DateTime.UtcNow);
+        });
     }
 
     public async Task CancelQuest(Guid userId, Guid questId)
