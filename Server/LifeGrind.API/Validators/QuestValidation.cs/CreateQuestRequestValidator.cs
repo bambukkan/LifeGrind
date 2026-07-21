@@ -12,7 +12,7 @@ public class CreateQuestRequestValidator : AbstractValidator<CreateQuestRequest>
         RuleFor(q => q.Description)
             .NotNull().WithMessage("Описание обязано быть в запросе.");
         RuleFor(q => q.Difficulty)
-            .NotEmpty().WithMessage("Сложность не должна быть пустой.");
+            .IsInEnum().WithMessage("Указана недопустимая сложность квеста");
         RuleFor(q => q.ExperienceReward)
             .NotEmpty().WithMessage("Опыт за квест не должен быть пустым.")
             .GreaterThan(0).WithMessage("Опыт за квест не может быть меньше или равен нуля");

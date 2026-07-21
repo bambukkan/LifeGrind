@@ -26,6 +26,11 @@ public class UserService : IUserService
 
     public async Task<string> Register(CreateUserRequest request)
     {
+        var existingUser = await userRepository.GetUserByEmail(request.Email);
+        if(existingUser != null)
+        {
+            throw new EmailAlreadyExistsException();
+        }
         UserEntity user = new UserEntity()
         {
             Id = Guid.NewGuid(),

@@ -7,6 +7,8 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
     {
         builder.HasKey(u => u.Id);
 
+        builder.HasIndex(u => u.Email).IsUnique();
+
         builder.HasMany(u => u.Skills)
             .WithOne(s => s.User).HasForeignKey(s => s.UserId);
 
