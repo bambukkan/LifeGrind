@@ -14,10 +14,16 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<UserEntity>> GetUsers()
+    public async Task<ActionResult<UserResponse>> GetMe()
     {
-        var users = await userService.GetUsers();
-        return Ok(users.Select(ToResponse).ToList());
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+        var user = await userService.GetMe(userId.Value);
+        
+        return Ok(ToResponse(user));
     }
 
     [HttpPost]
@@ -93,6 +99,7 @@ public class UserController : ControllerBase
     private static UserResponse ToResponse(UserEntity user)
     {
         return new UserResponse(
+            user.Id,
             user.Name,
             user.Email,
             user.TotalExperience,

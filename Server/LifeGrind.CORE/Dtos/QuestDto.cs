@@ -28,6 +28,5 @@ public record QuestResponse(
     DateTime? CompletedAt,
     int ExperienceReward,
     decimal CoinReward,
-    Guid UserId ,
     Guid SkillId
 );

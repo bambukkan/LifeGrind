@@ -14,7 +14,7 @@ public class SkillController : ControllerBase
 
 
     [HttpGet]
-    public async Task<ActionResult<List<SkillEntity>>> GetSkillsByUserId(){
+    public async Task<ActionResult<List<SkillResponse>>> GetSkillsByUserId(){
         var userId = GetCurrentUserId();
         if(userId == null)
         {
@@ -70,8 +70,7 @@ public class SkillController : ControllerBase
             skill.Id,
             skill.Name,
             skill.Description,
-            skill.Experience,
-            skill.UserId
+            skill.Experience
         );
     }
 }

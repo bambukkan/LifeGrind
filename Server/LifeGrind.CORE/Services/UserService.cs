@@ -14,9 +14,14 @@ public class UserService : IUserService
         jwtProvider = _jwtProvider;
     }
 
-    public async Task<List<UserEntity>> GetUsers()
+    public async Task<UserEntity> GetMe(Guid userId)
     {
-        return await userRepository.GetUsers();
+        var user = await userRepository.GetMe(userId);
+         if (user == null)
+        {
+            throw new EntityNotFoundException("Пользователь не найден");
+        }
+        return user;
     }
 
     public async Task<string> Register(CreateUserRequest request)

@@ -1,6 +1,6 @@
 public interface IUserRepository
 {
-    Task<List<UserEntity>> GetUsers();
+    Task<UserEntity?> GetMe(Guid userId);
     Task<UserEntity?> GetUserById(Guid userId);
     Task Add(UserEntity user);
 

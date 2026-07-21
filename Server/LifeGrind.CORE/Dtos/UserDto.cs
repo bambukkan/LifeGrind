@@ -17,6 +17,7 @@ public record LoginUserRequest(
 );
 
 public record UserResponse(
+    Guid Id,
     string Name,
     string Email,
     int TotalExperience,

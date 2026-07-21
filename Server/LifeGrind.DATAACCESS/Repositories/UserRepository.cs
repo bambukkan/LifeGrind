@@ -7,11 +7,9 @@ public class UserRepository : IUserRepository
     {
         context = _context;
     }
-    public Task<List<UserEntity>> GetUsers()
+    public Task<UserEntity?> GetMe(Guid userId)
     {
-        return context.Users
-            .AsNoTracking()
-            .ToListAsync();
+        return context.Users.FirstOrDefaultAsync(u => u.Id == userId);
     }
     public Task<UserEntity?> GetUserById(Guid userId)
     {

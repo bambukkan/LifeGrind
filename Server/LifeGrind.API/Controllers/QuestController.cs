@@ -13,7 +13,7 @@ public class QuestController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<QuestEntity>>> GetQuestsByUserId(){
+    public async Task<ActionResult<List<QuestResponse>>> GetQuestsByUserId(){
         var userId = GetCurrentUserId();
         if(userId == null)
         {
@@ -95,7 +95,6 @@ public class QuestController : ControllerBase
             quest.CompletedAt,
             quest.ExperienceReward,
             quest.CoinReward,
-            quest.UserId,
             quest.SkillId
         );
     }
