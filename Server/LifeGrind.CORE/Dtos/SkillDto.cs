@@ -9,3 +9,11 @@ public record UpdateSkillRequest(
     string Description,
     int Experience
 );
+
+public record SkillResponse(
+    Guid Id,
+    string Name,
+    string Description,
+    int Experience,
+    Guid UserId
+);

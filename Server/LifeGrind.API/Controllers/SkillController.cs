@@ -22,7 +22,7 @@ public class SkillController : ControllerBase
         }
 
         var skills= await SkillService.GetSkillsByUserId(userId.Value);
-        return Ok(skills);
+        return Ok(skills.Select(ToResponse).ToList());
     }
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] CreateSkillRequest request){
@@ -62,5 +62,16 @@ public class SkillController : ControllerBase
     {
         var userIdClaim = User.FindFirst("UserId")?.Value;
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+    }
+
+    private static SkillResponse ToResponse(SkillEntity skill)
+    {
+        return new SkillResponse(
+            skill.Id,
+            skill.Name,
+            skill.Description,
+            skill.Experience,
+            skill.UserId
+        );
     }
 }

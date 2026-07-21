@@ -20,7 +20,7 @@ public class QuestController : ControllerBase
             return Unauthorized();
         }
         var quests= await QuestService.GetQuestsByUserId(userId.Value);
-        return Ok(quests);
+        return Ok(quests.Select(ToResponse).ToList());
     }
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] CreateQuestRequest request){
@@ -81,5 +81,22 @@ public class QuestController : ControllerBase
     {
         var userIdClaim = User.FindFirst("UserId")?.Value;
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+    }
+
+    private static QuestResponse ToResponse(QuestEntity quest)
+    {
+        return new QuestResponse(
+            quest.Id,
+            quest.Title,
+            quest.Description,
+            quest.Difficulty,
+            quest.Status,
+            quest.CreatedAt,
+            quest.CompletedAt,
+            quest.ExperienceReward,
+            quest.CoinReward,
+            quest.UserId,
+            quest.SkillId
+        );
     }
 }

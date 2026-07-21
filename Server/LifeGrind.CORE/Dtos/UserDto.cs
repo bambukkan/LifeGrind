@@ -15,3 +15,10 @@ public record LoginUserRequest(
     string Email,
     string Password
 );
+
+public record UserResponse(
+    string Name,
+    string Email,
+    int TotalExperience,
+    decimal Coins
+);

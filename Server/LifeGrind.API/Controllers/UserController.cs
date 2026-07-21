@@ -17,7 +17,7 @@ public class UserController : ControllerBase
     public async Task<ActionResult<UserEntity>> GetUsers()
     {
         var users = await userService.GetUsers();
-        return Ok(users);
+        return Ok(users.Select(ToResponse).ToList());
     }
 
     [HttpPost]
@@ -88,5 +88,15 @@ public class UserController : ControllerBase
     {
         var userIdClaim = User.FindFirst("UserId")?.Value;
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+    }
+
+    private static UserResponse ToResponse(UserEntity user)
+    {
+        return new UserResponse(
+            user.Name,
+            user.Email,
+            user.TotalExperience,
+            user.Coins
+        );
     }
 }

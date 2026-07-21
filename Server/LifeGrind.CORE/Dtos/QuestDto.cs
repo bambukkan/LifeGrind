@@ -17,3 +17,17 @@ public record UpdateQuestRequest(
     int ExperienceReward,
     decimal CoinReward
 );
+
+public record QuestResponse(
+    Guid Id,
+    string Title,
+    string Description,
+    QuestDifficulty Difficulty,
+    QuestStatus Status,
+    DateTime CreatedAt,
+    DateTime? CompletedAt,
+    int ExperienceReward,
+    decimal CoinReward,
+    Guid UserId ,
+    Guid SkillId
+);
