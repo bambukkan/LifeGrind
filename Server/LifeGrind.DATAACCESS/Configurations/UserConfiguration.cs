@@ -14,5 +14,7 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
 
         builder.HasMany(u => u.Quests)
             .WithOne(s => s.User).HasForeignKey(s => s.UserId);
+        builder.HasMany(u => u.PersonalRewards)
+            .WithOne(s => s.User).HasForeignKey(s => s.UserId);
     }
 }

@@ -61,6 +61,9 @@ builder.Services.AddScoped<ISkillService,SkillService>();
 builder.Services.AddScoped<IQuestRepository,QuestRepository>();
 builder.Services.AddScoped<IQuestService,QuestService>();
 
+builder.Services.AddScoped<IPersonalRewardRepository,PersonalRewardRepository>();
+builder.Services.AddScoped<IPersonalRewardService,PersonalRewardService>();
+
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 builder.Services.AddDbContext<LifeGrindDbContext>(options =>
@@ -93,3 +96,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.Run();
+
+/*
+cd Client
+npm run dev
+Stop-Process -Id 21132
+cd C:\Users\gk\Desktop\LearningBackend\LifeGrind\Server\LifeGrind.API
+dotnet run
+*/

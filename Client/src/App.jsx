@@ -305,6 +305,14 @@ function App() {
       return;
     }
 
+    const experienceReward = Number(questForm.experienceReward);
+    const coinReward = Number(questForm.coinReward);
+
+    if (!(experienceReward > 0) || !(coinReward > 0)) {
+      setMessage("Награда за квест должна быть больше нуля: укажи XP и coins.");
+      return;
+    }
+
     try {
       setLoading(true);
       await request("/Quests", {
@@ -312,8 +320,8 @@ function App() {
         body: JSON.stringify({
           ...questForm,
           difficulty: Number(questForm.difficulty),
-          experienceReward: Number(questForm.experienceReward),
-          coinReward: Number(questForm.coinReward)
+          experienceReward,
+          coinReward
         })
       });
 
@@ -641,16 +649,20 @@ function App() {
                 XP
                 <input
                   type="number"
+                  min="1"
                   value={questForm.experienceReward}
                   onChange={(event) => setQuestForm({ ...questForm, experienceReward: event.target.value })}
+                  required
                 />
               </label>
               <label>
                 Coins
                 <input
                   type="number"
+                  min="1"
                   value={questForm.coinReward}
                   onChange={(event) => setQuestForm({ ...questForm, coinReward: event.target.value })}
+                  required
                 />
               </label>
             </div>

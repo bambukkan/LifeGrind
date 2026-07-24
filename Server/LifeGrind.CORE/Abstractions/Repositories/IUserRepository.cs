@@ -10,4 +10,5 @@ public interface IUserRepository
     Task UpdateUserExpAndCoins(Guid userId,int TotalExperience,
         decimal Coins);
     Task Delete(Guid userId);
+    Task<bool> TryPurchaseReward(Guid userId, decimal costReward);
 }

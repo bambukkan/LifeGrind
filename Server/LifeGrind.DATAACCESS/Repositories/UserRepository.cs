@@ -44,4 +44,15 @@ public class UserRepository : IUserRepository
     public async Task Delete(Guid userId){
         await context.Users.Where(u => u.Id == userId).ExecuteDeleteAsync();
     }
+
+    public async Task<bool> TryPurchaseReward(Guid userId, decimal costReward)
+    {
+        var updatedUsers = await context.Users
+            .Where(u => u.Id == userId && u.Coins >= costReward)
+            .ExecuteUpdateAsync(s =>
+                s.SetProperty(u => u.Coins,u => u.Coins - costReward)
+            );
+
+        return updatedUsers == 1;
+    }
 }

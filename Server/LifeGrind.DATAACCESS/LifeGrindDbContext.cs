@@ -6,12 +6,14 @@ public class LifeGrindDbContext(DbContextOptions<LifeGrindDbContext> options) : 
     public DbSet<UserEntity> Users {get;set;}
     public DbSet<SkillEntity> Skills {get;set;}
     public DbSet<QuestEntity> Quests {get;set;}
+    public DbSet<PersonalRewardEntity> PersonalRewards {get;set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new QuestConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new SkillConfiguration());
+        modelBuilder.ApplyConfiguration(new PersonalRewardConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

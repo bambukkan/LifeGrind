@@ -8,4 +8,5 @@ public class UserEntity
     public decimal Coins {get;set;} = 0;
     public List<SkillEntity> Skills {get;set;} = new List<SkillEntity>();
     public List<QuestEntity> Quests {get;set;} = new List<QuestEntity>();
+    public List<PersonalRewardEntity> PersonalRewards {get;set;} = new List<PersonalRewardEntity>();
 }
