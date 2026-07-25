@@ -64,7 +64,7 @@ button:disabled {
 
 .player-banner {
   display: grid;
-  grid-template-columns: minmax(190px, 0.8fr) minmax(0, 1.5fr) auto;
+  grid-template-columns: minmax(190px, 0.8fr) minmax(0, 1.5fr) auto auto;
   align-items: stretch;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.11);
@@ -153,6 +153,12 @@ button:disabled {
 .refresh-button {
   align-self: center;
   margin: 0 14px;
+  padding: 0 12px;
+}
+
+.rewards-link {
+  align-self: center;
+  margin-left: 14px;
   padding: 0 12px;
 }
 
@@ -337,7 +343,8 @@ select:focus {
   gap: 16px;
 }
 
-.profile-page {
+.profile-page,
+.rewards-page {
   margin-top: 24px;
 }
 
@@ -368,6 +375,16 @@ select:focus {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
   gap: 16px;
+}
+
+.rewards-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.3fr);
+  gap: 16px;
+}
+
+.rewards-list-panel {
+  min-height: 340px;
 }
 
 .account-actions {
@@ -462,7 +479,8 @@ select:focus {
 }
 
 .item-meta,
-.quest-actions {
+.quest-actions,
+.reward-actions {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -521,6 +539,22 @@ select:focus {
   flex-wrap: wrap;
 }
 
+.reward-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.reward-actions button {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.reward-cost {
+  margin-top: 8px;
+  color: #c7d8f2 !important;
+  font-weight: 700;
+}
+
 .quest-actions button,
 .item-meta button {
   min-height: 36px;
@@ -564,7 +598,8 @@ select:focus {
   .status-strip,
   .dashboard-grid,
   .split-row,
-  .profile-grid {
+  .profile-grid,
+  .rewards-grid {
     grid-template-columns: 1fr;
   }
 
@@ -593,6 +628,10 @@ select:focus {
     margin: 12px;
   }
 
+  .rewards-link {
+    margin: 12px 12px 0;
+  }
+
   .page-heading {
     align-items: stretch;
     flex-direction: column;
@@ -603,7 +642,8 @@ select:focus {
   }
 
   .item-meta,
-  .quest-actions {
+  .quest-actions,
+  .reward-actions {
     justify-content: flex-start;
   }
 }

@@ -64,8 +64,22 @@ const defaultProfileForm = {
   newPassword: ""
 };
 
+const defaultPersonalReward = {
+  name: "",
+  description: "",
+  cost: 10
+};
+
 function getCurrentPage() {
-  return window.location.pathname === "/profile" ? "profile" : "dashboard";
+  if (window.location.pathname === "/profile") {
+    return "profile";
+  }
+
+  if (window.location.pathname === "/rewards") {
+    return "rewards";
+  }
+
+  return "dashboard";
 }
 
 function App() {
@@ -77,10 +91,13 @@ function App() {
   const [questForm, setQuestForm] = useState(defaultQuest);
   const [editingSkill, setEditingSkill] = useState(null);
   const [editingQuest, setEditingQuest] = useState(null);
+  const [personalRewardForm, setPersonalRewardForm] = useState(defaultPersonalReward);
+  const [editingPersonalReward, setEditingPersonalReward] = useState(null);
   const [user, setUser] = useState(null);
   const [profileForm, setProfileForm] = useState(defaultProfileForm);
   const [skills, setSkills] = useState([]);
   const [quests, setQuests] = useState([]);
+  const [personalRewards, setPersonalRewards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("Backend: http://localhost:5074");
 
@@ -155,15 +172,17 @@ function App() {
   async function refreshData() {
     try {
       setLoading(true);
-      const [userData, skillsData, questsData] = await Promise.all([
+      const [userData, skillsData, questsData, rewardsData] = await Promise.all([
         request("/Users"),
         request("/Skills"),
-        request("/Quests")
+        request("/Quests"),
+        request("/personalRewards")
       ]);
 
       setUser(userData);
       setSkills(skillsData || []);
       setQuests(questsData || []);
+      setPersonalRewards(rewardsData || []);
       setIsAuthed(true);
       setMessage("Данные загружены.");
     } catch {
@@ -171,6 +190,7 @@ function App() {
       setUser(null);
       setSkills([]);
       setQuests([]);
+      setPersonalRewards([]);
       setMessage("Зарегистрируйся или войди, чтобы начать гринд.");
     } finally {
       setLoading(false);
@@ -231,7 +251,10 @@ function App() {
       setUser(null);
       setSkills([]);
       setQuests([]);
+      setPersonalRewards([]);
       setProfileForm(defaultProfileForm);
+      setPersonalRewardForm(defaultPersonalReward);
+      setEditingPersonalReward(null);
       navigate("/");
       setMessage("Вы вышли из аккаунта.");
     } catch (error) {
@@ -254,7 +277,10 @@ function App() {
       setUser(null);
       setSkills([]);
       setQuests([]);
+      setPersonalRewards([]);
       setProfileForm(defaultProfileForm);
+      setPersonalRewardForm(defaultPersonalReward);
+      setEditingPersonalReward(null);
       navigate("/");
       setMessage("Аккаунт удалён.");
     } catch (error) {
@@ -454,6 +480,105 @@ function App() {
     }
   }
 
+  async function createPersonalReward(event) {
+    event.preventDefault();
+
+    const cost = Number(personalRewardForm.cost);
+    if (!personalRewardForm.name.trim() || !(cost > 0)) {
+      setMessage("Укажи название и цену награды больше нуля.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await request("/personalRewards", {
+        method: "POST",
+        body: JSON.stringify({ ...personalRewardForm, cost })
+      });
+
+      setPersonalRewardForm(defaultPersonalReward);
+      setMessage("Личная награда создана.");
+      await refreshData();
+    } catch (error) {
+      setMessage(`Reward error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function startPersonalRewardEdit(reward) {
+    setEditingPersonalReward({
+      id: reward.id,
+      name: reward.name,
+      description: reward.description || "",
+      cost: reward.cost
+    });
+  }
+
+  async function updatePersonalReward(event) {
+    event.preventDefault();
+
+    const cost = Number(editingPersonalReward.cost);
+    if (!editingPersonalReward.name.trim() || !(cost > 0)) {
+      setMessage("Укажи название и цену награды больше нуля.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await request(`/personalRewards/${editingPersonalReward.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          name: editingPersonalReward.name,
+          description: editingPersonalReward.description,
+          cost
+        })
+      });
+
+      setEditingPersonalReward(null);
+      setMessage("Личная награда обновлена.");
+      await refreshData();
+    } catch (error) {
+      setMessage(`Reward error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function deletePersonalReward(rewardId) {
+    if (!window.confirm("Удалить личную награду?")) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await request(`/personalRewards/${rewardId}`, { method: "DELETE" });
+      setMessage("Личная награда удалена.");
+      await refreshData();
+    } catch (error) {
+      setMessage(`Reward error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function purchasePersonalReward(reward) {
+    if (!window.confirm(`Получить награду «${reward.name}» за ${reward.cost} coins?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await request(`/personalRewards/${reward.id}/purchase`, { method: "POST" });
+      setMessage(`Награда «${reward.name}» получена.`);
+      await refreshData();
+    } catch (error) {
+      setMessage(`Reward error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function getSkillName(skillId) {
     return skills.find((skill) => skill.id === skillId)?.name || "Без навыка";
   }
@@ -476,6 +601,7 @@ function App() {
             <div><span>Skills</span><strong>{skills.length}</strong></div>
             <div><span>Quests</span><strong>{quests.length}</strong></div>
           </div>
+          <button className="ghost-button rewards-link" type="button" onClick={() => navigate("/rewards")}>Награды</button>
           <button className="ghost-button refresh-button" onClick={refreshData} disabled={loading}>Обновить</button>
         </section>
       ) : (
@@ -927,6 +1053,120 @@ function App() {
               <p>Выйди на этом устройстве или полностью удали профиль вместе с его данными.</p>
               <button className="ghost-button" type="button" onClick={logout} disabled={loading}>Выйти из аккаунта</button>
               <button className="danger-button" type="button" onClick={deleteAccount} disabled={loading}>Удалить аккаунт</button>
+            </section>
+          </div>
+        </section>
+      )}
+
+      {isAuthed && page === "rewards" && (
+        <section className="rewards-page">
+          <div className="page-heading">
+            <div>
+              <p className="eyebrow">Personal rewards</p>
+              <h1>Личные награды</h1>
+            </div>
+            <button className="ghost-button" type="button" onClick={() => navigate("/")}>На главную</button>
+          </div>
+
+          <div className="rewards-grid">
+            <form className="panel" onSubmit={createPersonalReward}>
+              <div className="panel-heading">
+                <p className="eyebrow">New reward</p>
+                <h2>Новая награда</h2>
+              </div>
+
+              <label>
+                Название
+                <input
+                  value={personalRewardForm.name}
+                  onChange={(event) => setPersonalRewardForm({ ...personalRewardForm, name: event.target.value })}
+                  placeholder="Вечер за игрой"
+                  required
+                />
+              </label>
+
+              <label>
+                Описание
+                <textarea
+                  value={personalRewardForm.description}
+                  onChange={(event) => setPersonalRewardForm({ ...personalRewardForm, description: event.target.value })}
+                  placeholder="Без чувства вины"
+                />
+              </label>
+
+              <label>
+                Цена в coins
+                <input
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  value={personalRewardForm.cost}
+                  onChange={(event) => setPersonalRewardForm({ ...personalRewardForm, cost: event.target.value })}
+                  required
+                />
+              </label>
+
+              <button className="primary-button" type="submit" disabled={loading}>Создать награду</button>
+            </form>
+
+            <section className="panel rewards-list-panel">
+              <div className="panel-heading">
+                <p className="eyebrow">Reward list</p>
+                <h2>Доступные награды</h2>
+              </div>
+
+              <div className="list-stack">
+                {personalRewards.length === 0 && <p className="empty">Пока нет личных наград.</p>}
+                {personalRewards.map((reward) => (
+                  editingPersonalReward?.id === reward.id ? (
+                    <form className="item-card edit-card" key={reward.id} onSubmit={updatePersonalReward}>
+                      <label>
+                        Название
+                        <input
+                          value={editingPersonalReward.name}
+                          onChange={(event) => setEditingPersonalReward({ ...editingPersonalReward, name: event.target.value })}
+                          required
+                        />
+                      </label>
+                      <label>
+                        Описание
+                        <textarea
+                          value={editingPersonalReward.description}
+                          onChange={(event) => setEditingPersonalReward({ ...editingPersonalReward, description: event.target.value })}
+                        />
+                      </label>
+                      <label>
+                        Цена в coins
+                        <input
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          value={editingPersonalReward.cost}
+                          onChange={(event) => setEditingPersonalReward({ ...editingPersonalReward, cost: event.target.value })}
+                          required
+                        />
+                      </label>
+                      <div className="inline-actions">
+                        <button className="primary-button" type="submit" disabled={loading}>Сохранить</button>
+                        <button className="ghost-button" type="button" onClick={() => setEditingPersonalReward(null)} disabled={loading}>Отмена</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <article className="item-card reward-card" key={reward.id}>
+                      <div>
+                        <h3>{reward.name}</h3>
+                        <p>{reward.description || "Описание не задано."}</p>
+                        <p className="reward-cost">{reward.cost} coins</p>
+                      </div>
+                      <div className="reward-actions">
+                        <button className="success-button" type="button" onClick={() => purchasePersonalReward(reward)} disabled={loading}>Получить</button>
+                        <button className="ghost-button" type="button" onClick={() => startPersonalRewardEdit(reward)} disabled={loading}>Изменить</button>
+                        <button className="danger-button" type="button" onClick={() => deletePersonalReward(reward.id)} disabled={loading}>Удалить</button>
+                      </div>
+                    </article>
+                  )
+                ))}
+              </div>
             </section>
           </div>
         </section>
